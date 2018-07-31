@@ -1,7 +1,8 @@
 module.exports = function(app, db) {
 
     request = require('request');
-    
+    const token = process.env.TOKEN;
+
     _getAvailableAcronyms = () => {
 	return ['tacos', 'stuff']
     }
@@ -70,6 +71,7 @@ module.exports = function(app, db) {
 	request.post(
 	    'https://slack.com/api/dialog.open',
 	    {
+		token: token,
 		trigger_id: triggerId,
 		dialog: {
 		    callback_id: 'make-it',
