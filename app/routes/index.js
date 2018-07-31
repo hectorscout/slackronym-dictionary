@@ -1,5 +1,7 @@
 module.exports = function(app, db) {
 
+    request = require('request');
+    
     _getAvailableAcronyms = () => {
 	return ['tacos', 'stuff']
     }
