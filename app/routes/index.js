@@ -63,10 +63,43 @@ module.exports = function(app, db) {
 	};
     }
 
+
+    _openDialog = (triggerId) => {
+	request.post(
+	    'https://slack.com/api/dialog.open',
+	    {
+		trigger_id: triggerId,
+		dialog: {
+		    callback_id: 'make-it',
+		    title: 'AAA (Add An Acronym)',
+		    submit_label: 'Add It',
+		    elements: [
+			{
+			    type: 'text',
+			    label: 'Acronym',
+			    name: 'acronym'
+			},
+			{
+			    type: 'text',
+			    label: 'Definition',
+			    name: 'definition'
+			}
+		    ]
+		}
+	    },
+	    (err, response, body) => {
+		console.log(err);
+		console.log(response);
+		console.log();
+		console.log(body);
+	    }
+	);
+    }
+    
     
     app.post('/request', (req, res) => {
-	console.log(req.body)
-	
+	console.log(req.body);
+	_openDialog(req.body.trigger_id);
     });
 
     app.post('/lookup', (req, res) => {
