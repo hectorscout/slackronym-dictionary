@@ -43,7 +43,7 @@ module.exports = function(app, db) {
 
     _getUnknownResponse = (text) => {
 	return {
-	    text: `We're not sure what \`${req.body.text}\` is...`,
+	    text: `We're not sure what \`${text}\` is...`,
 	    attachments: [{
 		text: 'idk',
 		actions:
@@ -51,7 +51,7 @@ module.exports = function(app, db) {
 		    name: 'request',
 		    text: 'We should add it.',
 		    type: 'button',
-		    value: JSON.stringify({key: key, definition: definition})
+		    value: text
 		}, {
 		    name: 'dumb',
 		    text: 'I was just being dumb.',
