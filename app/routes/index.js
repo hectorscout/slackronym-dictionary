@@ -69,29 +69,30 @@ module.exports = function(app, db) {
 
     _openDialog = (triggerId) => {
 	console.log('==========================================', token.length);
+	body = {
+	    token: token,
+	    trigger_id: triggerId,
+	    dialog: {
+		callback_id: 'make-it',
+		title: 'AAA (Add An Acronym)',
+		submit_label: 'Add It',
+		elements: [
+		    {
+			type: 'text',
+			label: 'Acronym',
+			name: 'acronym'
+		    },
+		    {
+			type: 'text',
+			label: 'Definition',
+			name: 'definition'
+		    }
+		]
+	    }
+	}
+	console.log(body);
 	request.post(
-	    'https://slack.com/api/dialog.open',
-	    {
-		token: token,
-		trigger_id: triggerId,
-		dialog: {
-		    callback_id: 'make-it',
-		    title: 'AAA (Add An Acronym)',
-		    submit_label: 'Add It',
-		    elements: [
-			{
-			    type: 'text',
-			    label: 'Acronym',
-			    name: 'acronym'
-			},
-			{
-			    type: 'text',
-			    label: 'Definition',
-			    name: 'definition'
-			}
-		    ]
-		}
-	    },
+	    'https://slack.com/api/dialog.open', body,
 	    (err, response, body) => {
 		console.log(err);
 		// console.log(response);
