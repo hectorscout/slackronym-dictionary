@@ -21,7 +21,7 @@ module.exports = function(app, db) {
 	console.log(key);
 	console.log(definition);
 	return {
-	    text: `Looks like you want to add \`#{key}\` as \`#{definition}\`?`,
+	    text: `Looks like you want to add \'${key} as \`${definition}\`?`,
 	    actions:
 	    [{
 		text: 'We should add it.',
@@ -39,7 +39,7 @@ module.exports = function(app, db) {
     app.post('/lookup', (req, res) => {
 	key = req.body.text.toUpperCase()
 
-	if (req.body.text.indexOf(':') != '1'){
+	if (req.body.text.indexOf(':') != -1){
 	    res.send(_getAdditionResponse(req.body.text));
 	}
         else if (['LIST', 'HELP'].includes(key)) {
