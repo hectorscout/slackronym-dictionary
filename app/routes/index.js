@@ -69,6 +69,7 @@ module.exports = function(app, db) {
 
     _openDialog = (triggerId) => {
 	console.log('==========================================', token.length);
+	console.log(triggerId)
 	body = {
 	    token: token,
 	    trigger_id: triggerId,
@@ -90,7 +91,7 @@ module.exports = function(app, db) {
 		]
 	    }
 	}
-	console.log(body);
+	// console.log(body);
 	request.post(
 	    'https://slack.com/api/dialog.open', body,
 	    (err, response, body) => {
@@ -105,7 +106,8 @@ module.exports = function(app, db) {
     
     app.post('/request', (req, res) => {
 	console.log(req.body);
-	_openDialog(req.body.trigger_id);
+	triggerId = JSON.parse(req.body.payout).trigger_id;
+	_openDialog(triggerId);
 	res.send({some: 'thing'});
     });
 
