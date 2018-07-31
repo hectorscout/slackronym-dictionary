@@ -46,6 +46,7 @@ module.exports = function(app, db) {
 	    text: `We're not sure what \`${text}\` is...`,
 	    attachments: [{
 		text: 'idk',
+		callback_id: 'unknown',
 		actions:
 		[{
 		    name: 'request',
