@@ -22,15 +22,17 @@ module.exports = function(app, db) {
 	console.log(definition);
 	return {
 	    text: `Looks like you want to add \'${key} as \`${definition}\`?`,
-	    actions:
-	    [{
-		text: 'We should add it.',
-		type: 'button',
-		value: JSON.stringify({key: key, definition: definition})
-	    }, {
-		text: 'I was just being dumb.',
-		type: 'button',
-		value: 'dumb'
+	    attachments: [{
+		actions:
+		[{
+		    text: 'We should add it.',
+		    type: 'button',
+		    value: JSON.stringify({key: key, definition: definition})
+		}, {
+		    text: 'I was just being dumb.',
+		    type: 'button',
+		    value: 'dumb'
+		}]
 	    }]
 	}
     }
