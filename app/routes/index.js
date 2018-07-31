@@ -31,6 +31,7 @@ module.exports = function(app, db) {
 		    type: 'button',
 		    value: JSON.stringify({key: key, definition: definition})
 		}, {
+		    name: 'dumb',
 		    text: 'I was just being dumb.',
 		    type: 'button',
 		    value: 'dumb'
@@ -40,13 +41,38 @@ module.exports = function(app, db) {
     }
 
 
+    _getUnknownResponse = (text) =>
+	return {
+	    text: `We're not sure what \`${req.body.text}\` is...`
+	    attachments [{
+		text: 'idk',
+		actions:
+		[{
+		    name: 'request',
+		    text: 'We should add it.',
+		    type: 'button',
+		    value: JSON.stringify({key: key, definition: definition})
+		}, {
+		    name: 'dumb',
+		    text: 'I was just being dumb.',
+		    type: 'button',
+		    value: 'dumb'
+		}]
+	    }]
+	};
+
+    app.post('/request', (req, res) => {
+	console.log(req.body)
+	
+    });
+
     app.post('/lookup', (req, res) => {
 	key = req.body.text.toUpperCase()
 
-	if (req.body.text.indexOf(':') != -1){
-	    res.send(_getAdditionResponse(req.body.text));
-	}
-        else if (['LIST', 'HELP'].includes(key)) {
+	// if (req.body.text.indexOf(':') != -1){
+	//     res.send(_getAdditionResponse(req.body.text));
+	// }
+	if (['LIST', 'HELP'].includes(key)) {
 	    res.send(_getListResponse());
 	}
 	else {
@@ -61,7 +87,7 @@ module.exports = function(app, db) {
 		    });
 		}
 		else {
-		    res.send({text: 'something clever'});
+		    res.send(_getUnknownResponse(req.body.text));
 		}
 	    });
 	}
