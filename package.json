@@ -1,0 +1,28 @@
+{
+  "name": "slackronym-dictionary",
+  "version": "1.0.0",
+  "description": "API for /rad slack commands",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hectorscout/slackronym-dictionary.git"
+  },
+  "author": "Tyson Holmes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hectorscout/slackronym-dictionary/issues"
+  },
+  "homepage": "https://github.com/hectorscout/slackronym-dictionary#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "mongodb": "^3.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  }
+}
