@@ -107,8 +107,9 @@ module.exports = function(app, db) {
     app.post('/request', (req, res) => {
 	console.log(req.body);
 	payload = JSON.parse(req.body.payload);
-	console.log({payload: payload});
+	console.log('payload', payload);
 	triggerId = payload.trigger_id;
+	console.log('triggerId', triggerId);
 	_openDialog(triggerId);
 	res.send({some: 'thing'});
     });
