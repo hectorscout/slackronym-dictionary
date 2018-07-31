@@ -91,7 +91,7 @@ module.exports = function(app, db) {
 		]
 	    }
 	}
-	// console.log(body);
+	console.log(body);
 	request.post(
 	    'https://slack.com/api/dialog.open', body,
 	    (err, response, body) => {
