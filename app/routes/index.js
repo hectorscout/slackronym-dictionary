@@ -41,10 +41,10 @@ module.exports = function(app, db) {
     }
 
 
-    _getUnknownResponse = (text) =>
+    _getUnknownResponse = (text) => {
 	return {
-	    text: `We're not sure what \`${req.body.text}\` is...`
-	    attachments [{
+	    text: `We're not sure what \`${req.body.text}\` is...`,
+	    attachments: [{
 		text: 'idk',
 		actions:
 		[{
@@ -60,7 +60,9 @@ module.exports = function(app, db) {
 		}]
 	    }]
 	};
+    }
 
+    
     app.post('/request', (req, res) => {
 	console.log(req.body)
 	
