@@ -68,6 +68,7 @@ module.exports = function(app, db) {
 
 
     _openDialog = (triggerId) => {
+	console.log('==========================================', token.length);
 	request.post(
 	    'https://slack.com/api/dialog.open',
 	    {
