@@ -21,8 +21,9 @@ module.exports = function(app, db) {
 	console.log(key);
 	console.log(definition);
 	return {
-	    text: `Looks like you want to add \'${key} as \`${definition}\`?`,
+	    text: `Looks like you want to add \'${key}\` as \`${definition}\`?`,
 	    attachments: [{
+		text: 'idk',
 		actions:
 		[{
 		    text: 'We should add it.',
