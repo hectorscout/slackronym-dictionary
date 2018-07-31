@@ -5,7 +5,7 @@ module.exports = function(app, db) {
 	const details = {acronym: key}
 	db.collection('definitions').findOne(details, (err, item) => {
 	    if (err) {
-		res.send({error: 'some error'});
+		res.send({error: err});
 	    }
 	    else if (item){
 		res.send(item);
