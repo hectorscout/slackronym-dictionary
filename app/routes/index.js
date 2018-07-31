@@ -94,7 +94,7 @@ module.exports = function(app, db) {
 	    },
 	    (err, response, body) => {
 		console.log(err);
-		console.log(response);
+		// console.log(response);
 		console.log();
 		console.log(body);
 	    }
@@ -105,6 +105,7 @@ module.exports = function(app, db) {
     app.post('/request', (req, res) => {
 	console.log(req.body);
 	_openDialog(req.body.trigger_id);
+	res.send({some: 'thing'});
     });
 
     app.post('/lookup', (req, res) => {
