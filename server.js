@@ -5,7 +5,7 @@ const bodyParser     = require('body-parser');
 
 const app            = express();
 
-const port = process.env.SLACRONYM_PORT || 8888;
+const port = process.env.SLACRONYM_PORT || 8080;
 const dbUrl = process.env.DB_URL;
     
 app.use(bodyParser.urlencoded({ extended: true }));
