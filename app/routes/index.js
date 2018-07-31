@@ -21,11 +21,12 @@ module.exports = function(app, db) {
 	console.log(key);
 	console.log(definition);
 	return {
-	    text: `Looks like you want to add \'${key}\` as \`${definition}\`?`,
+	    text: `Looks like you want to add \`${key}\` as \`${definition}\`?`,
 	    attachments: [{
 		text: 'idk',
 		actions:
 		[{
+		    name: 'request',
 		    text: 'We should add it.',
 		    type: 'button',
 		    value: JSON.stringify({key: key, definition: definition})
