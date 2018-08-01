@@ -69,7 +69,7 @@ module.exports = function(app, db) {
     }
 
 
-    _openDialog = (triggerId) => {
+    _openAddDialog = (triggerId, options) => {
 	options = {
 	    url: 'https://slack.com/api/dialog.open',
 	    headers: {
@@ -87,7 +87,8 @@ module.exports = function(app, db) {
 			{
 			    type: 'text',
 			    label: 'Acronym',
-			    name: 'acronym'
+			    name: 'acronym',
+			    value: options.acronym
 			},
 			{
 			    type: 'text',
@@ -107,12 +108,14 @@ module.exports = function(app, db) {
     
     
     app.post('/request', (req, res) => {
-	console.log(req.body);
 	payload = JSON.parse(req.body.payload);
 	console.log('payload', payload);
-	triggerId = payload.trigger_id;
-	console.log('triggerId', triggerId);
-	_openDialog(triggerId);
+	switch (payload.callback_id) {
+	case UNKNOWN_ACK_ID:
+	    action = payload.actions[0]
+	    _openAddDialog(payload.trigger_id, {acronym: action.text});
+	    break;
+	}
 	res.send({some: 'thing'});
     });
 
