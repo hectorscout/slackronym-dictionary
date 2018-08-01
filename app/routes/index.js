@@ -70,6 +70,7 @@ module.exports = function(app, db) {
 
 
     _openAddDialog = (triggerId, options) => {
+	console.log({options: options});
 	options = {
 	    url: 'https://slack.com/api/dialog.open',
 	    headers: {
