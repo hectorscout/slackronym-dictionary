@@ -71,9 +71,10 @@ module.exports = function(app, db) {
 	options = {
 	    url: 'https://slack.com/api/dialog.open',
 	    headers: {
-		Authorization: `Bearer ${token}`
+		Authorization: `Bearer ${token}`,
+		'Content-type': 'application/json'
 	    },
-	    body: {
+	    body: JSON.stringify({
 		// token: token,
 		trigger_id: triggerId,
 		dialog: {
@@ -93,7 +94,7 @@ module.exports = function(app, db) {
 			}
 		    ]
 		}
-	    }
+	    })
 	}
 	request.post(options, (err, response, body) => {
 	    console.log('eeeeeeeerrrrrrrrrrooooooooorrrrrrrrrr', err);
