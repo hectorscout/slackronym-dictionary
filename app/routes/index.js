@@ -72,7 +72,7 @@ module.exports = function(app, db) {
 	    url: 'https://slack.com/api/dialog.open',
 	    headers: {
 		Authorization: `Bearer ${token}`
-	    }
+	    },
 	    body: {
 		// token: token,
 		trigger_id: triggerId,
