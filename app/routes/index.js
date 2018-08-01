@@ -80,7 +80,7 @@ module.exports = function(app, db) {
 		dialog: {
 		    callback_id: 'make-it',
 		    title: 'AAA (Add An Acronym)',
-		    submit_label: 'Add It',
+		    submit_label: 'Add',
 		    elements: [
 			{
 			    type: 'text',
