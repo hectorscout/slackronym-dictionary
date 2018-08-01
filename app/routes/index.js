@@ -73,29 +73,29 @@ module.exports = function(app, db) {
 	    headers: {
 		Authorization: `Bearer ${token}`
 	    }
-	};
-	body = {
-	    // token: token,
-	    trigger_id: triggerId,
-	    dialog: {
-		callback_id: 'make-it',
-		title: 'AAA (Add An Acronym)',
-		submit_label: 'Add It',
-		elements: [
-		    {
-			type: 'text',
-			label: 'Acronym',
-			name: 'acronym'
-		    },
-		    {
-			type: 'text',
-			label: 'Definition',
-			name: 'definition'
-		    }
-		]
+	    body: {
+		// token: token,
+		trigger_id: triggerId,
+		dialog: {
+		    callback_id: 'make-it',
+		    title: 'AAA (Add An Acronym)',
+		    submit_label: 'Add It',
+		    elements: [
+			{
+			    type: 'text',
+			    label: 'Acronym',
+			    name: 'acronym'
+			},
+			{
+			    type: 'text',
+			    label: 'Definition',
+			    name: 'definition'
+			}
+		    ]
+		}
 	    }
 	}
-	request.post(options, body, (err, response, body) => {
+	request.post(options, (err, response, body) => {
 	    console.log('eeeeeeeerrrrrrrrrrooooooooorrrrrrrrrr', err);
 	    // console.log(response);
 	    console.log();
