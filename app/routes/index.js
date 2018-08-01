@@ -1,5 +1,8 @@
 module.exports = function(app, db) {
 
+    const UNKNOWN_ACK_ID = 'unknownAck';
+    const DEFINE_ACK_DIALOG_ID = 'defineAckDialog';
+    
     request = require('request');
     const token = process.env.TOKEN;
 
@@ -18,38 +21,37 @@ module.exports = function(app, db) {
     }
 
 
-    _getAdditionResponse = (text) => {
-	[key, definition] = text.split(':');
-	key = key.toUpperCase();
-	console.log(key);
-	console.log(definition);
-	return {
-	    text: `Looks like you want to add \`${key}\` as \`${definition}\`?`,
-	    attachments: [{
-		text: 'idk',
-		actions:
-		[{
-		    name: 'request',
-		    text: 'We should add it.',
-		    type: 'button',
-		    value: JSON.stringify({key: key, definition: definition})
-		}, {
-		    name: 'dumb',
-		    text: 'I was just being dumb.',
-		    type: 'button',
-		    value: 'dumb'
-		}]
-	    }]
-	}
-    }
+    // _getAdditionResponse = (text) => {
+    // 	[key, definition] = text.split(':');
+    // 	key = key.toUpperCase();
+    // 	console.log(key);
+    // 	console.log(definition);
+    // 	return {
+    // 	    text: `Looks like you want to add \`${key}\` as \`${definition}\`?`,
+    // 	    attachments: [{
+    // 		text: 'idk',
+    // 		actions:
+    // 		[{
+    // 		    name: 'request',
+    // 		    text: 'We should add it.',
+    // 		    type: 'button',
+    // 		    value: JSON.stringify({key: key, definition: definition})
+    // 		}, {
+    // 		    name: 'dumb',
+    // 		    text: 'I was just being dumb.',
+    // 		    type: 'button',
+    // 		    value: 'dumb'
+    // 		}]
+    // 	    }]
+    // 	}
+    // }
 
 
     _getUnknownResponse = (text) => {
 	return {
 	    text: `We're not sure what \`${text}\` is...`,
 	    attachments: [{
-		text: 'idk',
-		callback_id: 'unknown',
+		callback_id: UNKNOWN_ACK_ID,
 		actions:
 		[{
 		    name: 'request',
@@ -91,6 +93,7 @@ module.exports = function(app, db) {
 			    type: 'text',
 			    label: 'Definition',
 			    name: 'definition'
+			    hint: "If you don't know, just leave it blank and we'll try to figure it out."
 			}
 		    ]
 		}
@@ -98,8 +101,6 @@ module.exports = function(app, db) {
 	}
 	request.post(options, (err, response, body) => {
 	    console.log('eeeeeeeerrrrrrrrrrooooooooorrrrrrrrrr', err);
-	    // console.log(response);
-	    console.log();
 	    console.log(body);
 	});
     }
