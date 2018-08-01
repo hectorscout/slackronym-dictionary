@@ -70,8 +70,14 @@ module.exports = function(app, db) {
     _openDialog = (triggerId) => {
 	console.log('==========================================', token.length);
 	console.log(triggerId)
+	options = {
+	    url: 'https://slack.com/api/dialog.open',
+	    headers: {
+		Authorization: `Bearer ${token}`
+	    }
+	};
 	body = {
-	    token: token,
+	    // token: token,
 	    trigger_id: triggerId,
 	    dialog: {
 		callback_id: 'make-it',
@@ -92,9 +98,7 @@ module.exports = function(app, db) {
 	    }
 	}
 	console.log(body);
-	request.post(
-	    'https://slack.com/api/dialog.open', body,
-	    (err, response, body) => {
+	    request.post(options, body, (err, response, body) => {
 		console.log(err);
 		// console.log(response);
 		console.log();
