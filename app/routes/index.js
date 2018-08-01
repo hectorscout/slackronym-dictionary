@@ -95,7 +95,15 @@ module.exports = function(app, db) {
 			    type: 'text',
 			    label: 'Definition',
 			    name: 'definition',
+			    required: false,
 			    hint: "If you don't know, just leave it blank and we'll try to figure it out."
+			},
+			{
+			    type: 'text',
+			    label: 'Documentation Link',
+			    name: 'docUrl',
+			    required: false,
+			    subType: 'url'
 			}
 		    ]
 		}
@@ -114,10 +122,10 @@ module.exports = function(app, db) {
 	switch (payload.callback_id) {
 	case UNKNOWN_ACK_ID:
 	    action = payload.actions[0]
-	    _openAddDialog(payload.trigger_id, {acronym: action.text});
+	    _openAddDialog(payload.trigger_id, {acronym: action.value});
 	    break;
 	}
-	res.send({some: 'thing'});
+	res.send();
     });
 
     app.post('/lookup', (req, res) => {
