@@ -92,7 +92,7 @@ module.exports = function(app, db) {
 			{
 			    type: 'text',
 			    label: 'Definition',
-			    name: 'definition'
+			    name: 'definition',
 			    hint: "If you don't know, just leave it blank and we'll try to figure it out."
 			}
 		    ]
