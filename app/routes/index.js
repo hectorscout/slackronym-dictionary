@@ -11,7 +11,7 @@ module.exports = function(app, db, web) {
     let messageIds = {};
 
 
-    _getItemAttachment = (item, {update, includeUser} = {}) => {
+    _getItemAttachment = (item, {update, user, timestamp} = {}) => {
 	itemAttachment = {
 	    title: `${item.acronym}:`,
 	    text: item.definition,
@@ -24,10 +24,17 @@ module.exports = function(app, db, web) {
 		short: false
 	    });
 	}
-	if (includeUser) {
+	if (user) {
 	    itemAttachment.fields.push({
 		title: 'Added By',
 		value: item.username,
+		short: true
+	    });
+	}
+	if (timestamp) {
+	    itemAttachment.fields.push({
+		title: 'Timestamp',
+		value: item.timestamp,
 		short: true
 	    });
 	}
@@ -187,7 +194,7 @@ module.exports = function(app, db, web) {
 	    let notificationMessage = {
 		text: `${item.username} just added or updated this...`,
 		channel: notificationChannel,
-		attachments: [_getItemAttachment(item, {includeUser: true})]
+		attachments: [_getItemAttachment(item, {user: true})]
 	    };
 	    web.chat.postMessage(notificationMessage);
 	}
@@ -271,14 +278,13 @@ module.exports = function(app, db, web) {
 
 	key = req.body.text.toUpperCase()
 	const update = key.split(' ')[0] === 'UPDATE'
-	const includeUser = key.split(' ')[0] === 'WHODID'
-	if (update || includeUser) {
+	const whodid = key.split(' ')[0] === 'WHODID'
+	if (update || whodid) {
 	    key = key.split(' ')[1] || '';
 	}
 
 	if (['LIST', 'HELP'].includes(key)) {
 	    return _getListResponse((response) => res.send(response));
-	    // return res.send(_getListResponse());
 	}
 
 	_getDefinitionsItem(key, (err, item) => {
@@ -290,7 +296,7 @@ module.exports = function(app, db, web) {
 		res.send(_getUnknownResponse(req.body.text));
 	    }
 	    else {
-		res.send({text: '', attachments: [_getItemAttachment(item, {update: update, includeUser: includeUser})]});
+		res.send({text: '', attachments: [_getItemAttachment(item, {update: update, user: whodid, timestamp: whodid})]});
 	    }
 	});
     });
