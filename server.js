@@ -3,7 +3,7 @@ const MongoClient = require('mongodb').MongoClient;
 const bodyParser = require('body-parser');
 const { WebClient } = require('@slack/client');
 
-const port = process.env.SLACKRONYM_PORT || 8080;
+const port = process.env.PORT || 8080;
 const dbUrl = process.env.SLACKRONYM_DB_URL;
 const dbName = process.env.SLACKRONYM_DB_NAME;
 const token = process.env.SLACKRONYM_TOKEN;
