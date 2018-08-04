@@ -272,7 +272,8 @@ module.exports = function(app, db, web) {
 
 	key = req.body.text.toUpperCase()
 	const update = key.split(' ')[0] === 'UPDATE'
-	if (update) {
+	const includeUser = key.split(' ')[0] === 'WHODID'
+	if (update || includeUser) {
 	    key = key.split(' ')[1] || '';
 	}
 
@@ -290,7 +291,7 @@ module.exports = function(app, db, web) {
 		res.send(_getUnknownResponse(req.body.text));
 	    }
 	    else {
-		res.send({text: '', attachments: [_getItemAttachment(item, {update: update})]});
+		res.send({text: '', attachments: [_getItemAttachment(item, {update: update, includeUser: includeUser})]});
 	    }
 	});
     });
