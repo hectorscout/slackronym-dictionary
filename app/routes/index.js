@@ -1,25 +1,34 @@
 module.exports = function(app, db, web) {
     const token = process.env.SLACKRONYM_TOKEN;
+    const notificationChannel = process.env.SLACKRONYM_NOTIFICATION_CHANNEL;
     const request = require('request');
 
     const ADD_ACK_ID = 'addAck';
     const DEFINE_ACK_DIALOG_ID = 'defineAckDialog';
     const DUMB_VALUE = 'A very dumb thing that noone will type into the thing';
+    const MESSAGE_LOOKUP_ID = 'messageLookUp';
     
     let messageIds = {};
 
- 
-    _getItemMessage = (item, update) => {
+
+    _getItemAttachment = (item, {update, includeUser} = {}) => {
 	itemAttachment = {
 	    title: `${item.acronym}:`,
 	    text: item.definition,
 	    fields: []
 	}
-	if(item.docUrl) {
+	if (item.docUrl) {
 	    itemAttachment.fields.push({
 		title: 'Documentation',
 		value: item.docUrl,
 		short: false
+	    });
+	}
+	if (includeUser) {
+	    itemAttachment.fields.push({
+		title: 'Added By',
+		value: item.username,
+		short: true
 	    });
 	}
 	if (update) {
@@ -32,17 +41,14 @@ module.exports = function(app, db, web) {
 	    }];
 	}
 	
-	return {
-	    text: '',
-	    attachments: [itemAttachment]
-	};
+	return itemAttachment;
     }
     
 
     _getListResponse = (callback) => {
-	db.collection('definitions').distinct('acronym', {}), (err, acronyms) => {
+	db.collection('definitions').distinct('acronym', (err, acronyms) => {
 	    if (err) {
-		callback({'There was an error trying to get all the available acronyms. Please try again later.'});
+		callback({text: 'There was an error trying to get all the available acronyms. Please try again later.'});
 	    }
 	    else {
 		acronyms.sort()
@@ -52,7 +58,7 @@ module.exports = function(app, db, web) {
 		});
 	    }
 	});
-    }
+    };
 
 
     _getUnknownResponse = (text) => {
@@ -171,10 +177,51 @@ module.exports = function(app, db, web) {
 	}
 	else {
 	    item = result.ops[0];
-	    _updateMessage(userId, {text: `We successfully updated the dictionary with your definition of \`${item.acronym}\`.`});
+	    let confirmationMessage = {
+		text: `We successfully updated the dictionary with your definition of \`${item.acronym}\`.`,
+		attachments: [_getItemAttachment(item)]
+	    };
+	    _updateMessage(userId, confirmationMessage);
 	    res.send();
+
+	    let notificationMessage = {
+		text: 'Somebody added this...',
+		channel: notificationChannel,
+		attachments: [_getItemAttachment(item, {includeUser: true})]
+	    };
+	    web.chat.postMessage(notificationMessage);
 	}
     }
+
+
+    _postMessageLookup = ({channel, user, message}) => {
+	const words = message.replace(/[^\w\s]/g,'').split(' ').map(x => x.toUpperCase());
+	let cursor = db.collection('definitions').aggregate([
+	    {$match: {acronym: {$in: words}}},
+	    {$sort: {timestamp: -1}},
+	    {$group: {
+	    	_id: '$acronym',
+	    	acronym: {$first: '$acronym'},
+	    	definition: {$first: '$definition'},
+	    	docUrl: {$first: '$docUrl'}
+	    }}
+	]);
+	cursor.toArray((err, items) => {
+	    let attachments = [];
+	    let text = 'No acronyms we know about in that message.'
+	    if (items) {
+		attachments = items.map(_getItemAttachment);
+		text = '';
+	    }
+	    web.chat.postEphemeral({
+		text: text,
+		channel: payload.channel.id,
+		user: payload.user.id,
+		attachments: attachments
+	    });
+	});
+    }
+    
     
     // Commands from interactive stuff like buttons and dialogs
     app.post('/request', (req, res) => {
@@ -207,6 +254,14 @@ module.exports = function(app, db, web) {
 	    }
 	    res.send();
 	    break;
+	case MESSAGE_LOOKUP_ID:
+	    // Look up acronyms in a message
+	    _postMessageLookup({
+		channel: payload.channel.id,
+		user: payload.user.id,
+		message: payload.message.text
+	    });
+	    res.send();
 	}
     });
 
@@ -235,25 +290,9 @@ module.exports = function(app, db, web) {
 		res.send(_getUnknownResponse(req.body.text));
 	    }
 	    else {
-		res.send(_getItemMessage(item, update));
+		res.send({text: '', attachments: [_getItemAttachment(item, {update: update})]});
 	    }
 	});
-    });
-
-    // Not using this
-    app.post('/add', (req, res) => {
-    	definition = {
-    	    acronym: req.body.acronym.toUpperCase(),
-    	    definition: req.body.definition
-    	};
-    	db.collection('definitions').insert(definition, (err, result) => {
-    	    if (err) {
-    		res.send({ 'error': 'Uh.. an error happened' });
-    	    }
-    	    else {
-    		res.send(result.ops[0]);
-    	    }
-    	});
     });
 };
 
