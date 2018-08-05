@@ -105,7 +105,32 @@ module.exports = function(app, db, web) {
 	
     }
     
+    _getRequestedResponse = callback => {
+	let cursor = db.collection('definitions').aggregate([
+	    {$sort: {timestamp: -1}},
+	    {$group: {
+	    	_id: '$acronym',
+	    	acronym: {$first: '$acronym'},
+	    	definition: {$first: '$definition'},
+	    }},
+	    {$match: {definition: null}},
+	]);
+	cursor.toArray((err, items) => {
+	    let attachments = [];
+	    let text = 'No undefined requests.';
+	    console.log(items);
+	    if (items.length) {
+		attachments = items.map(item => _getItemAttachment(item, {update: true}));
+		text = 'The following acronym(s) have been requested';
+	    }
+	    callback({
+		text: text,
+		attachments: attachments
+	    });
+	});
+    }
 
+    
     _openAddDialog = (triggerId, options) => {
 	_getDefinitionsItem(options.acronym, (err, item) => {
 	    if (err) {
