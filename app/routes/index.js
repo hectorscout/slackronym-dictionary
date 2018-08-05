@@ -44,7 +44,7 @@ module.exports = function(app, db, web) {
 		name: 'request',
 		text: 'Update',
 		type: 'button',
-		value: key
+		value: item.acronym
 	    }];
 	}
 	
@@ -233,6 +233,17 @@ module.exports = function(app, db, web) {
 	    });
 	});
     }
+
+
+    _recordCommand = (command, username, result) => {
+    	definition = {
+    	    command: command,
+	    username: username,
+	    result: result,
+	    timestamp: new Date().toISOString()
+    	};
+    	db.collection('commands').insert(definition);
+    }
     
     
     // Commands from interactive stuff like buttons and dialogs
@@ -276,12 +287,19 @@ module.exports = function(app, db, web) {
 	}
     });
 
+
+    _sendCommandResponse = (res, response, reqBody, status) => {
+	_recordCommand(reqBody.text, reqBody.user_name, status);
+	res.send(response);
+    }
+    
+    
     // Main commands
     app.post('/lookup', (req, res) => {
 	console.log('/lookup');
 	console.log('request body', req.body);
 
-	key = req.body.text.toUpperCase()
+	let key = req.body.text.toUpperCase()
 	const update = key.split(' ')[0] === 'UPDATE'
 	const whodid = key.split(' ')[0] === 'WHODID'
 	if (update || whodid) {
@@ -289,21 +307,32 @@ module.exports = function(app, db, web) {
 	}
 
 	if (['LIST', 'HELP'].includes(key)) {
-	    return _getListResponse((response) => res.send(response));
+	    _getListResponse((response) => _sendCommandResponse(res, response, req.body, 'LIST'));
 	}
-
-	_getDefinitionsItem(key, (err, item) => {
-	    if (err) {
-		console.log('err:', err);
-		res.send({error: err});
-	    }
-	    else if (!item.definition) {
-		res.send(_getUnknownResponse(req.body.text));
-	    }
-	    else {
-		res.send({text: '', attachments: [_getItemAttachment(item, {update: update, user: whodid, timestamp: whodid})]});
-	    }
-	});
+	else if (key === 'REQUESTED') {
+	    _getRequestedResponse((response) => _sendCommandResponse(res, response, req.body, 'REQUESTED'));
+	}
+	else {
+	    _getDefinitionsItem(key, (err, item) => {
+		if (err) {
+		    console.log('err:', err);
+		    _sendCommandResponse(res, {error: err}, req.body, err)
+		}
+		else if (!item.definition) {
+		    _sendCommandResponse(res, _getUnknownResponse(key), req.body, 'NOT FOUND')
+		}
+		else {
+		    response = {
+			text: '',
+			attachments: [_getItemAttachment(item, {update: update, user: whodid, timestamp: whodid})]
+		    }
+		    let status = 'DEFINED';
+		    if (update) status = 'UPDATE';
+		    if (whodid) status = 'WHODID';
+		    _sendCommandResponse(res, response, req.body, status);
+		}
+	    });
+	}
     });
 
     // populate all the definitions we had before...
