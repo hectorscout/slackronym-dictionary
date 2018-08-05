@@ -185,9 +185,14 @@ module.exports = function(app, db, web) {
 	else {
 	    item = result.ops[0];
 	    let confirmationMessage = {
-		text: `We successfully updated the dictionary with your definition of \`${item.acronym}\`.`,
-		attachments: [_getItemAttachment(item)]
+		text: `A request to add \`${item.acronym}\` has been submitted on you behalf`
 	    };
+	    if (item.definition) {
+		confirmationMessage = {
+		    text: `We successfully updated the dictionary with your definition of \`${item.acronym}\`.`,
+		    attachments: [_getItemAttachment(item)]
+		};
+	    }
 	    _updateMessage(userId, confirmationMessage);
 	    res.send();
 
@@ -216,9 +221,9 @@ module.exports = function(app, db, web) {
 	cursor.toArray((err, items) => {
 	    let attachments = [];
 	    let text = 'No acronyms we know about in that message.'
-	    if (items) {
+	    if (items.length) {
 		attachments = items.map(_getItemAttachment);
-		text = '';
+		text = message;
 	    }
 	    web.chat.postEphemeral({
 		text: text,
