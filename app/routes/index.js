@@ -388,7 +388,7 @@ module.exports = function(app, db, web) {
 	    },
 	    {
 		title: '/rad list',
-		text: 'List all the available acronyms is one ugly list.'
+		text: 'List all the available acronyms in one ugly list.'
 	    }
 	]
 
