@@ -1,17 +1,19 @@
 module.exports = function(app, db, web) {
     const token = process.env.SLACKRONYM_TOKEN;
-    const notificationChannel = process.env.SLACKRONYM_NOTIFICATION_CHANNEL;
+    const adminChannelId = process.env.SLACKRONYM_ADMIN_CHANNEL_ID;
     const request = require('request');
+    const ObjectID = require('mongodb').ObjectID;
 
     const ADD_ACK_ID = 'addAck';
     const DEFINE_ACK_DIALOG_ID = 'defineAckDialog';
+    const REVERT_ACK_ID = 'revertAck'
     const DUMB_VALUE = 'A very dumb thing that noone will type into the thing';
     const MESSAGE_LOOKUP_ID = 'messageLookUp';
     
     let messageIds = {};
 
 
-    _getItemAttachment = (item, {update, user, timestamp} = {}) => {
+    _getItemAttachment = (item, {update, user, timestamp, revert} = {}) => {
 	itemAttachment = {
 	    title: `${item.acronym}:`,
 	    text: item.definition,
@@ -45,6 +47,15 @@ module.exports = function(app, db, web) {
 		text: 'Update',
 		type: 'button',
 		value: item.acronym
+	    }];
+	}
+	if (revert) {
+	    itemAttachment.callback_id = REVERT_ACK_ID;
+	    itemAttachment.actions = [{
+		name: 'revert',
+		text: 'Revert',
+		type: 'button',
+		value: item._id
 	    }];
 	}
 	
@@ -91,7 +102,11 @@ module.exports = function(app, db, web) {
 
 
     _getDefinitionsItem = (acronym, callback) => {
-	const cursor = db.collection('definitions').find({acronym: acronym}).sort({timestamp: -1}).limit(1);
+	query = {
+	    acronym: acronym,
+	    removed: {$in: [false, null]}
+	};
+	const cursor = db.collection('definitions').find(query).sort({timestamp: -1}).limit(1);
 	cursor.count((err, count) => {
 	    if (err) callback(err);
 	    if (!count) {
@@ -113,7 +128,10 @@ module.exports = function(app, db, web) {
 	    	acronym: {$first: '$acronym'},
 	    	definition: {$first: '$definition'},
 	    }},
-	    {$match: {definition: null}},
+	    {$match: {
+		definition: null,
+		removed: {$in: [false, null]}
+	    }},
 	]);
 	cursor.toArray((err, items) => {
 	    let attachments = [];
@@ -197,8 +215,8 @@ module.exports = function(app, db, web) {
 	};
 	request.post(options, (err, response, body) => {
 	    console.log('err', err);
-	    console.log('response', response);
-	    console.log('body', body);
+	    // console.log('response', response);
+	    // console.log('body', body);
 	});
     }
     
@@ -223,8 +241,8 @@ module.exports = function(app, db, web) {
 
 	    let notificationMessage = {
 		text: `${item.username} just added or updated this...`,
-		channel: notificationChannel,
-		attachments: [_getItemAttachment(item, {user: true})]
+		channel: adminChannelId,
+		attachments: [_getItemAttachment(item, {user: true, revert: true})]
 	    };
 	    web.chat.postMessage(notificationMessage);
 	}
@@ -234,7 +252,7 @@ module.exports = function(app, db, web) {
     _postMessageLookup = ({channel, user, message}) => {
 	const words = message.replace(/[^\w\s]/g,'').split(' ').map(x => x.toUpperCase());
 	let cursor = db.collection('definitions').aggregate([
-	    {$match: {acronym: {$in: words}}},
+	    {$match: {acronym: {$in: words}, removed: {$in: [false, null]}}},
 	    {$sort: {timestamp: -1}},
 	    {$group: {
 	    	_id: '$acronym',
@@ -309,7 +327,38 @@ module.exports = function(app, db, web) {
 		message: payload.message.text
 	    });
 	    res.send();
+	    break;
+	case REVERT_ACK_ID:
+	    // Set an acronym definition as removed
+	    console.log(payload.channel.id, adminChannelId);
+	    if (payload.channel.id !== adminChannelId) {
+		return res.send({text: "Not sure how you tried that, but you can't do it here..."});
+	    }
+	    id = payload.actions[0].value;
+	    query = {_id: ObjectID(id)};
+	    newValues = {$set: {removed: true}};
+	    db.collection('definitions').updateOne(query, newValues, (err, result) => {
+		db.collection('definitions').findOne({_id: ObjectID(id)}, (err, item) => {
+		    _getDefinitionsItem(item.acronym, (err, item) => {
+			if (err) {
+			    console.log('err:', err);
+			    res.send({error: err});
+			}
+			else if (!item.definition) {
+			    res.send({text: `\`${item.acronym}\` is no longer defined.`});
+			}
+			else {
+			    response = {
+				text: `Definition for \`${item.acronym}\` has fallen back to:`,
+				attachments: [_getItemAttachment(item, {revert: true, user: true, timestamp: true})]
+			    }
+			    res.send(response);
+			}
+		    });
+		});
+	    });
 	}
+	
     });
 
 
@@ -323,19 +372,29 @@ module.exports = function(app, db, web) {
     app.post('/lookup', (req, res) => {
 	console.log('/lookup');
 	console.log('request body', req.body);
-
-	let key = req.body.text.toUpperCase()
-	const update = key.split(' ')[0] === 'UPDATE'
-	const whodid = key.split(' ')[0] === 'WHODID'
-	if (update || whodid) {
+	const text = req.body.text.replace(/[^\w\s]/g,'');
+	let key = text.toUpperCase();
+	const command = key.split(' ')[0];
+	const update = command === 'UPDATE';
+	const whodid = command === 'WHODID';
+	const revert = command === 'REVERT';
+	if (update || whodid || revert) {
 	    key = key.split(' ')[1] || '';
 	}
 
-	if (['LIST', 'HELP'].includes(key)) {
+	if (revert && req.body.channel_id !== adminChannelId){
+	    response = {text: "Sorry, you can't \`revert\` here..."};
+	    _sendCommandResponse(res, response, req.body, 'REQUESTED');
+	}
+ 	else if (['LIST', 'HELP'].includes(key)) {
 	    _getListResponse((response) => _sendCommandResponse(res, response, req.body, 'LIST'));
 	}
 	else if (key === 'REQUESTED') {
 	    _getRequestedResponse((response) => _sendCommandResponse(res, response, req.body, 'REQUESTED'));
+	}
+	else if (key === 'CHANNELID') {
+	    // Util to get the channel id to set for ADMIN_CHANNEL_ID
+	    _sendCommandResponse(res, {text: `channel_id: ${req.body.channel_id}`}, req.body, 'CHANNELID');
 	}
 	else {
 	    _getDefinitionsItem(key, (err, item) => {
@@ -347,13 +406,20 @@ module.exports = function(app, db, web) {
 		    _sendCommandResponse(res, _getUnknownResponse(key), req.body, 'NOT FOUND')
 		}
 		else {
+		    attachmentOptions = {
+			update: update,
+			user: (whodid || revert),
+			timestamp: (whodid || revert),
+			revert: revert
+		    }
 		    response = {
 			text: '',
-			attachments: [_getItemAttachment(item, {update: update, user: whodid, timestamp: whodid})]
+			attachments: [_getItemAttachment(item, attachmentOptions)]
 		    }
 		    let status = 'DEFINED';
 		    if (update) status = 'UPDATE';
 		    if (whodid) status = 'WHODID';
+		    if (revert) status = 'REVERT';
 		    _sendCommandResponse(res, response, req.body, status);
 		}
 	    });
