@@ -392,6 +392,12 @@ module.exports = function(app, db, web) {
 	    }
 	]
 
+	if (isAdminChannel) {
+	    attachments.push({
+		title: '/rad revert rms',
+		text: 'Revert the current definition of \`RMS\`. If there is a previous definition it will fall back to that. Otherwise, it will just be undefined. \`REVERT\` is only available in this channel.'
+	    });
+	}
 	
 	return {
 	    text: 'Available Commands:',
@@ -404,7 +410,7 @@ module.exports = function(app, db, web) {
     app.post('/lookup', (req, res) => {
 	console.log('/lookup');
 	console.log('request body', req.body);
-	const text = req.body.text.replace(/[^\w\s]/g,'');
+	const text = req.body.text.replace(/[^\w\s&]/g,'');
 	let key = text.toUpperCase();
 	const command = key.split(' ')[0];
 	const update = command === 'UPDATE';
@@ -422,7 +428,7 @@ module.exports = function(app, db, web) {
 	    _getListResponse((response) => _sendCommandResponse(res, response, req.body, 'LIST'));
 	}
 	else if (key === 'HELP') {
-	    _sendCommandResponse(res, _getHelpResponse(), req.body, 'HELP');
+	    _sendCommandResponse(res, _getHelpResponse(req.body.channel_id === adminChannelId), req.body, 'HELP');
 	}
 	else if (key === 'REQUESTED') {
 	    _getRequestedResponse((response) => _sendCommandResponse(res, response, req.body, 'REQUESTED'));
