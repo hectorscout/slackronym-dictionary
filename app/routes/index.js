@@ -183,7 +183,7 @@ module.exports = function(app, db, web) {
 			    optional: true,
 			    subType: 'url',
 			    value: item.docUrl,
-			    hint: "FYI: If this is dumb, we'll just remove it... (and ban you ¯\\_(ツ)_/¯)"
+			    hint: "FYI: If this is dumb, we'll just remove it... and ban you ¯\\_(ツ)_/¯"
 			}
 		    ]
 		}
@@ -366,6 +366,38 @@ module.exports = function(app, db, web) {
 	_recordCommand(reqBody.text, reqBody.user_name, status);
 	res.send(response);
     }
+
+
+    _getHelpResponse = (isAdminChannel) => {
+	attachments = [
+	    {
+		title: '/rad rms',
+		text: 'Look up \`RMS\`.'
+	    },
+	    {
+		title: '/rad update rms',
+		text: 'Update the definition for \`RMS\`.'
+	    },
+	    {
+		title: '/rad requested',
+		text: 'Get a list of all the acronyms that have been requested and still have no definition.'
+	    },
+	    {
+		title: '/rad whodid rms',
+		text: 'Find out who was the last person to update \`RMS\`.'
+	    },
+	    {
+		title: '/rad list',
+		text: 'List all the available acronyms is one ugly list.'
+	    }
+	]
+
+	
+	return {
+	    text: 'Available Commands:',
+	    attachments: attachments
+	}
+    }
     
     
     // Main commands
@@ -383,11 +415,14 @@ module.exports = function(app, db, web) {
 	}
 
 	if (revert && req.body.channel_id !== adminChannelId){
-	    response = {text: "Sorry, you can't \`revert\` here..."};
+	    const response = {text: "Sorry, you can't \`revert\` here..."};
 	    _sendCommandResponse(res, response, req.body, 'REQUESTED');
 	}
- 	else if (['LIST', 'HELP'].includes(key)) {
+ 	else if (key === 'LIST') {
 	    _getListResponse((response) => _sendCommandResponse(res, response, req.body, 'LIST'));
+	}
+	else if (key === 'HELP') {
+	    _sendCommandResponse(res, _getHelpResponse(), req.body, 'HELP');
 	}
 	else if (key === 'REQUESTED') {
 	    _getRequestedResponse((response) => _sendCommandResponse(res, response, req.body, 'REQUESTED'));
