@@ -427,7 +427,7 @@ module.exports = function(app, db, web) {
  	else if (key === 'LIST') {
 	    _getListResponse((response) => _sendCommandResponse(res, response, req.body, 'LIST'));
 	}
-	else if (key === 'HELP') {
+	else if (key === 'HELP' || !key) {
 	    _sendCommandResponse(res, _getHelpResponse(req.body.channel_id === adminChannelId), req.body, 'HELP');
 	}
 	else if (key === 'REQUESTED') {
