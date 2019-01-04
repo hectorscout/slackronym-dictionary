@@ -272,7 +272,7 @@ module.exports = function(app, db, web) {
     else {
       let item = result.ops[0];
       let confirmationMessage = {
-        text: `A request to add \`${item.acronym}\` has been submitted on you behalf`
+        text: `A request to add \`${item.acronym}\` has been submitted on your behalf.`
       };
       if (item.definition) {
         confirmationMessage = {
