@@ -149,7 +149,7 @@ module.exports = function(app, db, web) {
 
 
   _getStatAttachment = (command) => {
-    console.log(command)
+    console.log(command);
     return {
       title: command._id,
       text: command.count
@@ -265,7 +265,7 @@ module.exports = function(app, db, web) {
   };
 
 
-  _updateCallback = (err, result, res, userId) => {
+  _updateCallback = (err, result, res, userId, originalItem) => {
     if (err) {
       res.send('There was... a _problem_...');
     }
@@ -286,7 +286,7 @@ module.exports = function(app, db, web) {
       let notificationMessage = {
         text: `${item.username} just added or updated this...`,
         channel: adminChannelId,
-        attachments: [_getItemAttachment(item, {user: true, revert: true})]
+        attachments: [_getItemAttachment(item, {user: true, revert: true}), _getItemAttachment(originalItem, {user: true})]
       };
       web.chat.postMessage(notificationMessage);
     }
@@ -354,12 +354,14 @@ module.exports = function(app, db, web) {
           _updateMessage(payload.user.id, {text: 'You did the right thing.'});
         }
         else {
-          _updateDefinition({
-            acronym: payload.submission.acronym,
-            definition: payload.submission.definition,
-            docUrl: payload.submission.docUrl,
-            username: payload.user.name
-          }, (err, result) => _updateCallback(err, result, res, payload.user.id));
+          _getDefinitionsItem(payload.submission.acronym, (err, originalItem) => {
+            _updateDefinition({
+              acronym: payload.submission.acronym,
+              definition: payload.submission.definition,
+              docUrl: payload.submission.docUrl,
+              username: payload.user.name
+            }, (err, result) => _updateCallback(err, result, res, payload.user.id, originalItem));
+          })
         }
         res.send();
         break;
