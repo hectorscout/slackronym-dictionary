@@ -6,6 +6,7 @@ module.exports = function(app, db, web) {
 
   const ADD_ACK_ID = 'addAck';
   const DEFINE_ACK_DIALOG_ID = 'defineAckDialog';
+  const ANON_ACK_DIALOG_ID = 'anonAckDialog';
   const REVERT_ACK_ID = 'revertAck';
   const DUMB_VALUE = 'A very dumb thing that noone will type into the thing';
   const MESSAGE_LOOKUP_ID = 'messageLookUp';
@@ -192,6 +193,24 @@ module.exports = function(app, db, web) {
     });
   };
 
+  _openAnonDialog = (trigger_id, text) => {
+    web.dialog.open({
+      trigger_id,
+      dialog: {
+        callback_id: ANON_ACK_DIALOG_ID,
+        title: 'Make An Anonymous Comment',
+        submit_label: 'Post',
+        elements: [
+          {
+            types: 'text',
+            label: 'Anonymous Comment',
+            name: 'anonText',
+            value: text
+          }
+        ]
+      }
+    })
+  }
 
   _openAddDialog = (triggerId, options) => {
     _getDefinitionsItem(options.acronym, (err, item) => {
@@ -244,7 +263,7 @@ module.exports = function(app, db, web) {
       username: username,
       timestamp: new Date().toISOString()
     };
-    db.collection('definitions').insert(definition, callback);
+    db.collection('definitions').insertOne(definition, callback);
   };
 
 
@@ -329,7 +348,7 @@ module.exports = function(app, db, web) {
       result: result,
       timestamp: new Date().toISOString()
     };
-    db.collection('commands').insert(definition);
+    db.collection('commands').insertOne(definition);
   };
 
 
@@ -348,6 +367,8 @@ module.exports = function(app, db, web) {
         _openAddDialog(payload.trigger_id, {acronym: value});
         res.send({text: 'Defining an acronym (_like a boss_)'});
         break;
+      case ANON_ACK_DIALOG_ID:
+        _updateMessage(payload.user.id, {text: payload.submission.anonText})
       case DEFINE_ACK_DIALOG_ID:
         // Closed the add definitions dialog
         if (payload.type === 'dialog_cancellation') {
@@ -453,9 +474,12 @@ module.exports = function(app, db, web) {
 
   // Main commands
   app.post('/anon', (req, res) => {
-    console.log('Trying to post anonymously.')
+    console.log('Trying to post anonymously.', req.body.trigger_id)
+
     const text = req.body.text;
-    res.send({text, response_type: 'in_channel', delete_original: true});
+    _openAnonDialog(req.body.trigger_id, req.body.text)
+    // res.send({text, response_type: 'in_channel', delete_original: true});
+    res.send()
   })
 
   app.post('/lookup', (req, res) => {
