@@ -452,6 +452,11 @@ module.exports = function(app, db, web) {
 
 
   // Main commands
+  app.post('/anon', (req, res) => {
+    const text = req.body.text;
+    res.send({text})
+  })
+
   app.post('/lookup', (req, res) => {
     console.log('/lookup');
     console.log('request body', req.body);
