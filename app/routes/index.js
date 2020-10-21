@@ -453,8 +453,9 @@ module.exports = function(app, db, web) {
 
   // Main commands
   app.post('/anon', (req, res) => {
+    console.log('Trying to post anonymously.')
     const text = req.body.text;
-    res.send({text})
+    res.send({text});
   })
 
   app.post('/lookup', (req, res) => {
