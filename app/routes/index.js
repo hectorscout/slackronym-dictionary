@@ -455,7 +455,7 @@ module.exports = function(app, db, web) {
   app.post('/anon', (req, res) => {
     console.log('Trying to post anonymously.')
     const text = req.body.text;
-    res.send({text, response_type: 'in_channel'});
+    res.send({text, response_type: 'in_channel', delete_original: true});
   })
 
   app.post('/lookup', (req, res) => {
