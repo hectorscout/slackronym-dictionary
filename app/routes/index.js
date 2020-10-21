@@ -194,22 +194,24 @@ module.exports = function(app, db, web) {
   };
 
   _openAnonDialog = (trigger_id, text) => {
-    web.dialog.open({
-      trigger_id,
-      dialog: {
-        callback_id: ANON_ACK_DIALOG_ID,
-        title: 'Make An Anonymous Comment',
-        submit_label: 'Post',
-        elements: [
-          {
-            types: 'text',
-            label: 'Anonymous Comment',
-            name: 'anonText',
-            value: text
-          }
-        ]
-      }
-    })
+    _openAddDialog(trigger_id, {text})
+    // web.dialog.open({
+    //   trigger_id,
+    //   dialog: {
+    //     callback_id: ANON_ACK_DIALOG_ID,
+    //     title: 'Make An Anonymous Comment',
+    //     submit_label: 'Post',
+    //     notify_on_cancel: false,
+    //     elements: [
+    //       {
+    //         types: 'text',
+    //         label: 'Anonymous Comment',
+    //         name: 'anonText',
+    //         value: text
+    //       }
+    //     ]
+    //   }
+    // })
   }
 
   _openAddDialog = (triggerId, options) => {
