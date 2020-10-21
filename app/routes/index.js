@@ -193,25 +193,25 @@ module.exports = function(app, db, web) {
     });
   };
 
-  _openAnonDialog = (trigger_id, text) => {
-    _openAddDialog(trigger_id, {text})
-    // web.dialog.open({
-    //   trigger_id,
-    //   dialog: {
-    //     callback_id: ANON_ACK_DIALOG_ID,
-    //     title: 'Make An Anonymous Comment',
-    //     submit_label: 'Post',
-    //     notify_on_cancel: false,
-    //     elements: [
-    //       {
-    //         types: 'text',
-    //         label: 'Anonymous Comment',
-    //         name: 'anonText',
-    //         value: text
-    //       }
-    //     ]
-    //   }
-    // })
+  _openAnonDialog = (triggerId, text) => {
+    web.dialog.open({
+      trigger_id: triggerId,
+      dialog: {
+        callback_id: ANON_ACK_DIALOG_ID,
+        title: 'Anonymous',
+        submit_label: 'Post',
+        notify_on_cancel: false,
+        elements: [
+          {
+            type: 'textarea',
+            label: 'Message:',
+            name: 'anonText',
+            value: text,
+            hint: 'No one will see `user is typing` message.'
+          },
+        ]
+      }
+    })
   }
 
   _openAddDialog = (triggerId, options) => {
@@ -279,7 +279,7 @@ module.exports = function(app, db, web) {
       body: JSON.stringify(message)
     };
     request.post(options, (err, response, body) => {
-      console.log('err', err);
+      if (err) console.log('err', err);
       // console.log('response', response);
       // console.log('body', body);
     });
@@ -370,7 +370,10 @@ module.exports = function(app, db, web) {
         res.send({text: 'Defining an acronym (_like a boss_)'});
         break;
       case ANON_ACK_DIALOG_ID:
-        _updateMessage(payload.user.id, {text: payload.submission.anonText})
+        messageIds[payload.user.id] = payload.response_url;
+        _updateMessage(payload.user.id, {text: payload.submission.anonText, response_type: 'in_channel'})
+        res.send()
+        break;
       case DEFINE_ACK_DIALOG_ID:
         // Closed the add definitions dialog
         if (payload.type === 'dialog_cancellation') {
@@ -476,11 +479,8 @@ module.exports = function(app, db, web) {
 
   // Main commands
   app.post('/anon', (req, res) => {
-    console.log('Trying to post anonymously.', req.body.trigger_id)
-
     const text = req.body.text;
     _openAnonDialog(req.body.trigger_id, req.body.text)
-    // res.send({text, response_type: 'in_channel', delete_original: true});
     res.send()
   })
 
